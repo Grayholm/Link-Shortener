@@ -1,6 +1,5 @@
 from random import choice
 
-from src.db import async_session
 from src.exceptions import LinkNotFoundError
 from src.models import Links
 
@@ -23,20 +22,18 @@ class LinkShortenerService:
 
     async def create_short_link(self, long_url: str):
         slug = self.generate_short_link()
-        async with async_session() as session:
-            add_stmt = insert(Links).values(slug=slug, url=long_url)
-            await session.execute(add_stmt)
-            await session.commit()
+        add_stmt = insert(Links).values(slug=slug, url=long_url)
+        await self.session.execute(add_stmt)
+        await self.session.commit()
         return slug
 
     async def get_long_url(self, slug: str):
-        async with async_session() as session:
-            stmt = select(Links.url).where(Links.slug == slug)
+        stmt = select(Links.url).where(Links.slug == slug)
 
-            result = await session.execute(stmt)
-            link = result.scalar_one_or_none()
-            print(link)
-            return link
+        result = await self.session.execute(stmt)
+        link = result.scalar_one_or_none()
+        print(link)
+        return link
 
 
     async def redirect_to_url(self, slug: str):
