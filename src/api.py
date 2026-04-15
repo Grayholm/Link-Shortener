@@ -10,13 +10,13 @@ router = APIRouter(
 )
 
 
-@router.post("/short-links")
+@router.post("/short-links", summary="Create a short link from a long URL")
 async def create_short_link_API(long_url: str, session=Depends(get_db)):
     res = await LinkShortenerService(session).create_short_link(long_url)
     return {"short_link": res}
     
 
-@router.get("/short-links/{slug}")
+@router.get("/short-links/{slug}", summary="Redirect to the original URL using the short link")
 async def redirect_to_url_API(slug: str, session=Depends(get_db)):
     try:
         return await LinkShortenerService(session).redirect_to_url(slug)

@@ -2,6 +2,7 @@ from random import choice
 
 from src.exceptions import LinkNotFoundError
 from src.models import Links
+from src.repository import LinksRepository
 
 from sqlalchemy import insert, select
 from fastapi.responses import RedirectResponse
@@ -22,17 +23,11 @@ class LinkShortenerService:
 
     async def create_short_link(self, long_url: str):
         slug = self.generate_short_link()
-        add_stmt = insert(Links).values(slug=slug, url=long_url)
-        await self.session.execute(add_stmt)
-        await self.session.commit()
+        await LinksRepository(self.session).add_link(slug, long_url)
         return slug
 
     async def get_long_url(self, slug: str):
-        stmt = select(Links.url).where(Links.slug == slug)
-
-        result = await self.session.execute(stmt)
-        link = result.scalar_one_or_none()
-        print(link)
+        link = await LinksRepository(self.session).get_link(slug)   
         return link
 
 
