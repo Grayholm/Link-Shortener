@@ -9,6 +9,13 @@ services:
       - "6432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
       
 volumes:
   db_data:
