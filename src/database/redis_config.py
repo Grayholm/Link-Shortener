@@ -1,5 +1,7 @@
 import redis.asyncio as redis
 
+from src.database.config import settings
+
 class RedisManager:
     def __init__(self, host, port):
         self.redis_client = redis.Redis(
@@ -24,4 +26,4 @@ class RedisManager:
         await self.redis_client.close()
 
 
-redis_manager = RedisManager(host="redis", port=6379)
+redis_manager = RedisManager(host=settings.REDIS_HOST, port=settings.REDIS_PORT)

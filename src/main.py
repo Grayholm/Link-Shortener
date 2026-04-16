@@ -12,7 +12,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from src.api import router
 from src.exceptions import AppError
-from src.redis_config import redis_manager
+from src.database.redis_config import redis_manager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,12 +20,14 @@ async def lifespan(app: FastAPI):
         await redis_manager.ping()
         logger.info("Redis connected")
     except Exception as e:
-        logger.error(f"Redis connection failed: {e}")
-        raise
+        logger.warning("Redis unavailable, continuing without cache: %s", e)
 
     yield
 
-    await redis_manager.close()
+    try:
+        await redis_manager.close()
+    except Exception as e:
+        logger.warning("Redis close failed: %s", e)
 
 app = FastAPI(lifespan=lifespan)
 
