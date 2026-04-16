@@ -42,4 +42,4 @@ class LinkShortenerService:
             logger.error(f"Link not found for slug: {slug}")
             raise LinkNotFoundError(slug)
 
-        return RedirectResponse(url=long_url)
+        return long_url
