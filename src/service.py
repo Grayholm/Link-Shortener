@@ -3,8 +3,7 @@ from random import choice
 
 from src.exceptions import LinkNotFoundError
 from src.repository import LinksRepository
-
-from fastapi.responses import RedirectResponse
+from src.redis_config import redis_manager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -14,6 +13,7 @@ ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 class LinkShortenerService:
     def __init__(self, session):
         self.session = session
+        self.redis = redis_manager
 
     def generate_short_link(self):
         slug = ""
@@ -36,10 +36,19 @@ class LinkShortenerService:
 
     async def redirect_to_url(self, slug: str):
         logger.info(f"Redirecting to URL for slug: {slug}")
+
+        key = f"redirect:{slug}"
+        value = await self.redis.get_value(key)
+        if value is not None:
+            logger.info(f"Cache hit for slug: {slug}")
+            return value
+        
         long_url = await self.get_long_url(slug)
 
         if long_url is None:
             logger.error(f"Link not found for slug: {slug}")
             raise LinkNotFoundError(slug)
+
+        await self.redis.set_value(key, long_url, ttl=300)
 
         return long_url
