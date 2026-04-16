@@ -5,14 +5,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from src.api import router
+from src.exceptions import AppError
 from src.redis_config import redis_manager
-
-app = FastAPI()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -26,5 +26,15 @@ async def lifespan(app: FastAPI):
     yield
 
     await redis_manager.close()
+
+app = FastAPI(lifespan=lifespan)
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+    logger.error("App error on %s: %s", request.url.path, exc.detail)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
 
 app.include_router(router)

@@ -1,7 +1,7 @@
 import logging
 from random import choice
 
-from src.exceptions import LinkNotFoundError
+from src.exceptions import LinkAlreadyExistsError, LinkNotFoundError
 from src.repository import LinksRepository
 from src.redis_config import redis_manager
 
@@ -15,16 +15,20 @@ class LinkShortenerService:
         self.session = session
         self.redis = redis_manager
 
-    def generate_short_link(self):
+    async def generate_short_link(self):
         slug = ""
         for _ in range(6):
             slug += choice(ALPHABET)
-        return slug
+        
+        if await LinksRepository(self.session).get_link(slug) is not None:
+            return await self.generate_short_link()
+        else:
+            return slug
 
 
     async def create_short_link(self, long_url: str):
         logger.info(f"Creating short link for URL: {long_url}")
-        slug = self.generate_short_link()
+        slug = await self.generate_short_link()
         await LinksRepository(self.session).add_link(slug, long_url)
         return slug
 
