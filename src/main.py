@@ -3,16 +3,17 @@ from pathlib import Path
 import sys
 import logging
 
-logger = logging.getLogger(__name__)
+from src.api import router
+from src.exceptions import AppError
+from src.database.redis_config import redis_manager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-sys.path.append(str(Path(__file__).parent.parent))
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-from src.api import router
-from src.exceptions import AppError
-from src.database.redis_config import redis_manager
+sys.path.append(str(Path(__file__).parent.parent))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

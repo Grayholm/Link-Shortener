@@ -1,3 +1,4 @@
+from pydantic import HttpUrl
 from sqlalchemy import insert, select
 from sqlalchemy.exc import IntegrityError
 
@@ -8,7 +9,7 @@ class LinksRepository:
     def __init__(self, session):
         self.session = session
 
-    async def add_link(self, slug: str, url: str):
+    async def add_link(self, slug: str, url: HttpUrl):
         try:
             add_stmt = insert(Links).values(slug=slug, url=url)
             await self.session.execute(add_stmt)

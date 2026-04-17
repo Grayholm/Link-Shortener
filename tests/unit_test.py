@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from src.exceptions import LinkAlreadyExistsError, LinkNotFoundError
+from src.exceptions import IsNotDoneToCreateUniqueLinkError, LinkNotFoundError
 from src.service import LinkShortenerService, MAX_CREATE_RETRIES
 
 
@@ -51,7 +51,7 @@ async def test_create_short_link_raises_after_retry_limit(mock_repo_class):
         side_effect=[f"slug{i}" for i in range(MAX_CREATE_RETRIES)]
     )
 
-    with pytest.raises(LinkAlreadyExistsError):
+    with pytest.raises(IsNotDoneToCreateUniqueLinkError):
         await service.create_short_link("https://www.example.com")
 
     assert mock_repo_instance.add_link.call_count == MAX_CREATE_RETRIES

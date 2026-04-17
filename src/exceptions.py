@@ -6,6 +6,6 @@ class LinkNotFoundError(AppError):
     detail = "Link not found"
     status_code = 404
 
-class LinkAlreadyExistsError(AppError):
-    detail = "Link already exists"
+class IsNotDoneToCreateUniqueLinkError(AppError):
+    detail = "Unable to create a unique link after multiple attempts"
     status_code = 409

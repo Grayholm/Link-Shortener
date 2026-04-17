@@ -11,7 +11,7 @@ class RedisManager:
         )
 
     async def ping(self):
-        return await self.redis_client.ping()
+        return self.redis_client.ping()
 
     async def set_value(self, key: str, value: str, ttl: int = 300):
         await self.redis_client.set(key, value, ex=ttl)

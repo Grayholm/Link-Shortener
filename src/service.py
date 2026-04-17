@@ -2,12 +2,12 @@ import logging
 from random import choice
 
 from sqlalchemy.exc import IntegrityError
+from pydantic import HttpUrl
 
-from src.exceptions import LinkAlreadyExistsError, LinkNotFoundError
+from src.exceptions import IsNotDoneToCreateUniqueLinkError, LinkNotFoundError
 from src.repository import LinksRepository
 from src.database.redis_config import redis_manager
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -23,7 +23,7 @@ class LinkShortenerService:
         return "".join(choice(ALPHABET) for _ in range(SLUG_LENGTH))
 
 
-    async def create_short_link(self, long_url: str):
+    async def create_short_link(self, long_url: HttpUrl):
         logger.info(f"Creating short link for URL: {long_url}")
         repository = LinksRepository(self.session)
 
@@ -40,7 +40,7 @@ class LinkShortenerService:
                 )
 
         logger.error("Failed to create unique slug after %s attempts", MAX_CREATE_RETRIES)
-        raise LinkAlreadyExistsError()
+        raise IsNotDoneToCreateUniqueLinkError()
 
     async def get_long_url(self, slug: str):
         logger.info(f"Getting long URL for slug: {slug}")
