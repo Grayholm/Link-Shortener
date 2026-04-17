@@ -2,7 +2,6 @@ import logging
 from random import choice
 
 from sqlalchemy.exc import IntegrityError
-from pydantic import HttpUrl
 
 from src.exceptions import IsNotDoneToCreateUniqueLinkError, LinkNotFoundError
 from src.repository import LinksRepository
@@ -23,7 +22,7 @@ class LinkShortenerService:
         return "".join(choice(ALPHABET) for _ in range(SLUG_LENGTH))
 
 
-    async def create_short_link(self, long_url: HttpUrl):
+    async def create_short_link(self, long_url: str):
         logger.info(f"Creating short link for URL: {long_url}")
         repository = LinksRepository(self.session)
 

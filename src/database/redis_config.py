@@ -3,15 +3,16 @@ import redis.asyncio as redis
 from src.database.config import settings
 
 class RedisManager:
-    def __init__(self, host, port):
+    def __init__(self, host, port, db):
         self.redis_client = redis.Redis(
             host=host,
             port=port,
+            db=db,
             decode_responses=True
         )
 
     async def ping(self):
-        return self.redis_client.ping()
+        return await self.redis_client.ping()
 
     async def set_value(self, key: str, value: str, ttl: int = 300):
         await self.redis_client.set(key, value, ex=ttl)
@@ -26,4 +27,4 @@ class RedisManager:
         await self.redis_client.close()
 
 
-redis_manager = RedisManager(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
+redis_manager = RedisManager(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
