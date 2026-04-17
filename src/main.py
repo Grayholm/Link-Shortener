@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 sys.path.append(str(Path(__file__).parent.parent))
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -30,7 +31,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("Redis close failed: %s", e)
 
+
 app = FastAPI(lifespan=lifespan)
+
 
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
@@ -39,5 +42,6 @@ async def app_error_handler(request: Request, exc: AppError):
         status_code=exc.status_code,
         content={"detail": exc.detail},
     )
+
 
 app.include_router(router)

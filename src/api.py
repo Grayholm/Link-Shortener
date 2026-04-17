@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 import logging
 
@@ -16,16 +15,21 @@ router = APIRouter(
     tags=["api"],
 )
 
+
 @router.post("/short-links", summary="Create a short link from a long URL")
-async def create_short_link_API(long_url: ShortLinkRequest = Body(...), session=Depends(get_db)):
+async def create_short_link_API(
+    long_url: ShortLinkRequest = Body(...), session=Depends(get_db)
+):
 
     logger.info(f"API call to create short link for URL: {str(long_url.long_url)}")
-    
+
     res = await LinkShortenerService(session).create_short_link(str(long_url.long_url))
     return {"slug": res}
-    
 
-@router.get("/short-links/{slug}", summary="Redirect to the original URL using the short link")
+
+@router.get(
+    "/short-links/{slug}", summary="Redirect to the original URL using the short link"
+)
 async def redirect_to_url_API(slug: str, session=Depends(get_db)):
     logger.info(f"API call to redirect for slug: {slug}")
     try:

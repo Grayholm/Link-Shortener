@@ -13,6 +13,7 @@ ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 SLUG_LENGTH = 6
 MAX_CREATE_RETRIES = 5
 
+
 class LinkShortenerService:
     def __init__(self, session):
         self.session = session
@@ -20,7 +21,6 @@ class LinkShortenerService:
 
     async def generate_short_link(self):
         return "".join(choice(ALPHABET) for _ in range(SLUG_LENGTH))
-
 
     async def create_short_link(self, long_url: str):
         logger.info(f"Creating short link for URL: {long_url}")
@@ -38,14 +38,15 @@ class LinkShortenerService:
                     attempt + 1,
                 )
 
-        logger.error("Failed to create unique slug after %s attempts", MAX_CREATE_RETRIES)
+        logger.error(
+            "Failed to create unique slug after %s attempts", MAX_CREATE_RETRIES
+        )
         raise IsNotDoneToCreateUniqueLinkError()
 
     async def get_long_url(self, slug: str):
         logger.info(f"Getting long URL for slug: {slug}")
-        link = await LinksRepository(self.session).get_link(slug)   
+        link = await LinksRepository(self.session).get_link(slug)
         return link
-
 
     async def redirect_to_url(self, slug: str):
         logger.info(f"Redirecting to URL for slug: {slug}")
@@ -58,7 +59,7 @@ class LinkShortenerService:
                 return value
         except Exception as e:
             logger.warning("Redis read failed for slug %s: %s", slug, e)
-        
+
         long_url = await self.get_long_url(slug)
 
         if long_url is None:

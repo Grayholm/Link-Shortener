@@ -6,9 +6,13 @@ from src.database.db import async_session_null_pool
 from src.database.config import settings
 from src.main import app
 
+
 @pytest.fixture(scope="session", autouse=True)
 async def check_test_mode():
-    assert settings.MODE == "test", "Tests must be run in test mode. Please set MODE=test in your .env file."
+    assert settings.MODE == "test", (
+        "Tests must be run in test mode. Please set MODE=test in your .env file."
+    )
+
 
 @pytest.fixture
 async def db():
@@ -25,7 +29,10 @@ async def db():
 
     app.dependency_overrides.clear()
 
+
 @pytest.fixture
 async def ac(db):
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         yield ac

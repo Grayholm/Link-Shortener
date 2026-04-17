@@ -20,9 +20,9 @@ async def test_create_short_link(mock_repo_class):
 
     assert result == "abc123"
     mock_repo_instance.add_link.assert_called_once_with(
-        "abc123",
-        "https://www.example.com"
+        "abc123", "https://www.example.com"
     )
+
 
 @patch("src.service.LinksRepository")
 async def test_create_short_link_retries_on_integrity_error(mock_repo_class):
@@ -38,6 +38,7 @@ async def test_create_short_link_retries_on_integrity_error(mock_repo_class):
 
     assert result == "def456"
     assert mock_repo_instance.add_link.call_count == 2
+
 
 @patch("src.service.LinksRepository")
 async def test_create_short_link_raises_after_retry_limit(mock_repo_class):
@@ -56,12 +57,16 @@ async def test_create_short_link_raises_after_retry_limit(mock_repo_class):
 
     assert mock_repo_instance.add_link.call_count == MAX_CREATE_RETRIES
 
-@pytest.mark.parametrize("slug, long_url, should_raise", [
-    ("abc123", "https://www.example.com", False),
-    ("def456", "https://www.anotherexample.com", False),
-    ("ghi789gd", None, True),
-    ("xyz000", None, True),
-])
+
+@pytest.mark.parametrize(
+    "slug, long_url, should_raise",
+    [
+        ("abc123", "https://www.example.com", False),
+        ("def456", "https://www.anotherexample.com", False),
+        ("ghi789gd", None, True),
+        ("xyz000", None, True),
+    ],
+)
 async def test_redirect_to_url(slug, long_url, should_raise):
     mock_repo_instance = AsyncMock()
     mock_session = AsyncMock()
@@ -78,16 +83,19 @@ async def test_redirect_to_url(slug, long_url, should_raise):
             with pytest.raises(LinkNotFoundError):
                 await service.redirect_to_url(slug)
         else:
-            response = await service.redirect_to_url(slug)  
+            response = await service.redirect_to_url(slug)
 
     if not should_raise:
         assert response == long_url
-        mock_redis.set_value.assert_called_once_with(f"redirect:{slug}", long_url, ttl=300)
+        mock_redis.set_value.assert_called_once_with(
+            f"redirect:{slug}", long_url, ttl=300
+        )
     else:
         mock_redis.set_value.assert_not_called()
 
     assert mock_repo_instance.get_link.call_count == 1
     mock_repo_instance.get_link.assert_called_with(slug)
+
 
 async def test_redirect_to_url_returns_db_value_when_redis_read_fails():
     mock_repo_instance = AsyncMock()
@@ -110,6 +118,7 @@ async def test_redirect_to_url_returns_db_value_when_redis_read_fails():
         ttl=300,
     )
 
+
 async def test_redirect_to_url_returns_db_value_when_redis_write_fails():
     mock_repo_instance = AsyncMock()
     mock_repo_instance.get_link.return_value = "https://www.example.com"
@@ -131,4 +140,3 @@ async def test_redirect_to_url_returns_db_value_when_redis_write_fails():
         "https://www.example.com",
         ttl=300,
     )
-

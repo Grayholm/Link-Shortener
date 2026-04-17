@@ -17,7 +17,7 @@ class LinksRepository:
         except IntegrityError as e:
             await self.session.rollback()
             raise e
-    
+
     async def get_link(self, slug: str):
         stmt = select(Links.url).where(Links.slug == slug)
         result = await self.session.execute(stmt)
